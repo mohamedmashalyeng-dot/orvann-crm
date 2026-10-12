@@ -97,8 +97,9 @@ function crm_choice($value, array $list)
 }
 
 /**
- * A lead needs a name and one way to reach them. Everything else is optional, so a
- * submission forwarded from the website is never dropped over a missing dropdown.
+ * A lead needs one way to reach the person: a usable phone number or email. Everything
+ * else is optional, so a submission forwarded from the website is never dropped over a
+ * short name or a missing dropdown.
  *
  * @return array [lead, errors]
  */
@@ -113,14 +114,14 @@ function crm_validate_lead($body)
     $phoneTyped = crm_text(crm_latin_digits(is_scalar($get('phone')) ? $get('phone') : ''), 40);
     $phone = crm_normalize_phone($phoneTyped);
     $phoneOk = crm_valid_phone($phone);
-    $email = mb_strtolower(crm_text($get('email'), 160), 'UTF-8');
+    $email = mb_strtolower(crm_text($get('email'), 254), 'UTF-8');
     $emailOk = (bool) preg_match('/^[^\s@]+@[^\s@]+\.[^\s@]+$/Du', $email);
 
     $lead = [
         'full_name' => crm_text($get('full_name'), 120),
         // An unrecognized number is kept as typed when there is an email to fall back on.
         'phone' => $phoneOk ? $phone : ($emailOk ? $phoneTyped : ''),
-        'email' => $email,
+        'email' => $emailOk ? $email : '',
         'company' => crm_text($get('company'), 160),
         'job_title' => crm_choice($get('job_title'), $lists['job_title']),
         'region' => crm_choice($get('region'), $lists['region']),
@@ -146,21 +147,31 @@ function crm_validate_lead($body)
             $unknown[] = $label . ': ' . $typed;
         }
     }
+    // The same goes for an email we could not use, when there is a phone number to rely on.
+    if ($email !== '' && !$emailOk && $phoneOk) {
+        $unknown[] = 'البريد كما كُتب: ' . $email;
+    }
     if ($unknown) {
         $lead['message'] = trim($lead['message'] . "\n\n" . implode("\n", $unknown));
     }
 
+    // The only thing that turns a lead away is having no way to reach the person. A short
+    // name, a missing name or one bad contact detail next to a good one is not a reason:
+    // the website has already accepted the enquiry and told the visitor so.
     $errors = [];
-    if (mb_strlen($lead['full_name'], 'UTF-8') < 2) {
-        $errors['full_name'] = 'اكتب الاسم بالكامل';
+    if (!$phoneOk && !$emailOk) {
+        if ($phoneTyped === '' && $email === '') {
+            $errors['phone'] = 'اكتب رقم موبايل أو بريد إلكتروني';
+        }
+        if ($phoneTyped !== '') {
+            $errors['phone'] = 'رقم الموبايل غير صحيح';
+        }
+        if ($email !== '') {
+            $errors['email'] = 'البريد الإلكتروني غير صحيح';
+        }
     }
-    if ($email !== '' && !$emailOk) {
-        $errors['email'] = 'البريد الإلكتروني غير صحيح';
-    }
-    if ($phoneTyped === '' && !$emailOk) {
-        $errors['phone'] = 'اكتب رقم موبايل أو بريد إلكتروني';
-    } elseif ($phoneTyped !== '' && !$phoneOk && !$emailOk) {
-        $errors['phone'] = 'رقم الموبايل غير صحيح';
+    if ($lead['full_name'] === '') {
+        $lead['full_name'] = $emailOk ? $email : $lead['phone'];
     }
 
     return [$lead, $errors];

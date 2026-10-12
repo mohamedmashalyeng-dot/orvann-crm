@@ -75,11 +75,13 @@
     first?.focus();
   }
 
-  // Quick checks before sending; the server validates everything again.
+  // What this form asks of a visitor. The server is deliberately more forgiving: it keeps
+  // any enquiry that has one usable contact, so nothing a website forwards is ever lost.
   function localErrors(data) {
     const errors = {};
     if (data.full_name.trim().length < 2) errors.full_name = 'اكتب الاسم بالكامل';
     if (data.phone.replace(/[^\d٠-٩۰-۹]/g, '').length < 8) errors.phone = 'اكتب رقم موبايل صحيح';
+    if (data.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) errors.email = 'البريد الإلكتروني غير صحيح';
     if (!data.job_title) errors.job_title = 'اختار المنصب';
     if (!data.region) errors.region = 'اختار المحافظة أو الدولة';
     return errors;

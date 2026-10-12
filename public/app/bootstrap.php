@@ -8,7 +8,7 @@ mb_internal_encoding('UTF-8');
 
 const CRM_SESSION_COOKIE = 'crm_session';
 const CRM_SESSION_SECONDS = 604800; // 7 days
-const CRM_MAX_BODY_BYTES = 20000;
+const CRM_MAX_BODY_BYTES = 65536; // room for the longest enquiry the website accepts, in any script
 
 function crm_config()
 {
