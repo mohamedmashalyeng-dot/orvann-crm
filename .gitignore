@@ -3,3 +3,6 @@ public/app/settings.php
 public/data/*.sqlite*
 local-data/
 *.zip
+
+# This computer's server address and key path.
+deploy.settings.ps1
