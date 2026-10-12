@@ -389,14 +389,26 @@
     data_dir: 'السيرفر مش قادر يكتب في فولدر data. خلي صلاحيات الفولدر 755.',
     api: 'مش قادر أوصل للـ API. اتأكد إن فولدر api وفولدر app اترفعوا كاملين.',
   };
-  fetch(apiUrl('health'))
-    .then((res) => res.json())
-    .then((health) => health.ok || Promise.reject(health.problem))
-    .catch((problem) => {
-      setupProblem = SETUP_PROBLEMS[problem] ?? SETUP_PROBLEMS.api;
-      $('login-error').textContent = setupProblem;
+  // Keeps asking while a problem is shown, so a page left open during an outage clears its
+  // own message once the server is fixed instead of going on saying it is broken.
+  async function checkServer() {
+    let problem = '';
+    try {
+      const health = await (await fetch(apiUrl('health'), { cache: 'no-store' })).json();
+      if (!health.ok) problem = SETUP_PROBLEMS[health.problem] ?? SETUP_PROBLEMS.api;
+    } catch {
+      problem = SETUP_PROBLEMS.api;
+    }
+    if (problem) {
+      $('login-error').textContent = problem;
       $('login-error').hidden = false;
-    });
+      setTimeout(checkServer, 15000);
+    } else if (setupProblem) {
+      $('login-error').hidden = true;
+    }
+    setupProblem = problem;
+  }
+  checkServer();
 
   // When the customer database is inside the website folder, warn loudly if the server would
   // hand it out. Nothing to probe when it is kept outside; and the probe gives up after a few
