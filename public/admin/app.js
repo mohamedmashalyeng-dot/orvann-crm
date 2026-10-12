@@ -398,10 +398,14 @@
       $('login-error').hidden = false;
     });
 
-  // The data folder holds the customer database: warn loudly if the server would hand it out.
+  // When the customer database is inside the website folder, warn loudly if the server would
+  // hand it out. Nothing to probe when it is kept outside; and the probe gives up after a few
+  // seconds, because some host networks leave a refused request hanging.
   async function checkDataFolder() {
     try {
-      const res = await fetch('../data/access-check.txt', { cache: 'no-store' });
+      const me = await api(apiUrl('me'));
+      if (me.data_outside_web_folder) return;
+      const res = await fetch('../data/access-check.txt', { cache: 'no-store', signal: AbortSignal.timeout(8000) });
       if (res.ok && (await res.text()).includes('CRM-DATA-EXPOSED')) $('exposed-warning').hidden = false;
     } catch {}
   }

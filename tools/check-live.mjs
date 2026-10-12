@@ -40,6 +40,13 @@ process.exitCode = failed ? 1 : 0;
 async function main() {
 // 1. The server can run it.
 let r = await request('/api/index.php?r=health');
+if (!r.json && /jschallenge|Checking your browser/i.test(r.text)) {
+  ok(false, 'could not check: the host\'s network is asking this computer to prove it is a browser');
+  note('It does that after many automatic requests in a short time. Uploads are not affected,');
+  note('and people using a normal browser are let through. Wait a few minutes, then run:');
+  note('  .\\deploy.ps1 -CheckOnly');
+  return;
+}
 if (!ok(r.json?.ok === true, 'server is ready (PHP, SQLite, settings file, writable data folder)')) {
   const reasons = {
     settings: 'app/settings.php is missing on the server',
@@ -56,8 +63,13 @@ ok(r.status === 200 && r.json?.regions?.length > 0, 'clean address /api/leads is
 const pages = ['index.html', 'form/index.html', 'admin/index.html', 'admin/app.js', 'js/form.js', 'embed.js', 'css/style.css'];
 const stale = [];
 for (const file of pages) {
-  const live = await request('/' + file);
-  if (live.status !== 200 || sha(live.bytes) !== sha(fs.readFileSync(`${root}/public/${file}`))) stale.push(file);
+  const local = fs.readFileSync(`${root}/public/${file}`);
+  // Scripts and styles are asked for the way the pages ask for them, with their version
+  // (see tools/stamp-assets.mjs), so this reads the server's file and not an old copy
+  // kept by the host's network.
+  const version = /\.(js|css)$/.test(file) ? '?v=' + sha(local).slice(0, 10) : '';
+  const live = await request('/' + file + version);
+  if (live.status !== 200 || sha(live.bytes) !== sha(local)) stale.push(file);
 }
 ok(stale.length === 0, stale.length ? 'live pages differ from this computer: ' + stale.join(', ') : 'live pages are the same as on this computer');
 

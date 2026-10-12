@@ -37,6 +37,11 @@ if (-not $CheckOnly) {
         Stop-Deploy "RemotePath must be a plain path relative to the hosting home folder, e.g. domains/orvann.com/public_html/crm"
     }
 
+    # Give script and style links a version that follows their content, so the host's
+    # network cannot hand a browser an old script together with a new page.
+    & node (Join-Path $ProjectRoot "tools\stamp-assets.mjs") $ProjectRoot
+    if ($LASTEXITCODE -ne 0) { Stop-Deploy "Could not update the asset versions." }
+
     # Windows' own tar keeps forward slashes and file times, which a zip made here does not.
     $Package = Join-Path $env:TEMP "crm-deploy.tar.gz"
     $Tar = Join-Path $env:SystemRoot "System32\tar.exe"
