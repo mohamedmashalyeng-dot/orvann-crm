@@ -1,0 +1,5 @@
+# Secrets and customer data never go into git.
+public/app/settings.php
+public/data/*.sqlite*
+local-data/
+crm-upload.zip

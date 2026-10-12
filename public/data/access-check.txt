@@ -1,0 +1,2 @@
+CRM-DATA-EXPOSED
+If a browser can read this file, the data folder is not protected.

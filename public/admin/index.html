@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>لوحة العملاء</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <!-- Login -->
+  <div id="login-view" class="login-wrap" hidden>
+    <form id="login-form" class="login-card">
+      <h1>تسجيل الدخول</h1>
+      <p class="muted" style="margin:0">لوحة متابعة العملاء</p>
+      <label class="field"><span>اسم المستخدم</span><input name="username" autocomplete="username" required></label>
+      <label class="field"><span>كلمة السر</span><input name="password" type="password" autocomplete="current-password" required></label>
+      <p class="alert" id="login-error" hidden></p>
+      <button class="btn primary" type="submit">دخول</button>
+    </form>
+  </div>
+
+  <!-- App -->
+  <div id="app-view" hidden>
+    <header class="topbar">
+      <h1>العملاء</h1>
+      <span class="user" id="user-name"></span>
+      <a class="btn sm" href="../" target="_blank" rel="noopener">فتح الفورم</a>
+      <a class="btn sm" id="export-btn" href="../api/index.php?r=export.csv">تصدير Excel</a>
+      <button class="btn sm" id="refresh-btn" type="button">تحديث</button>
+      <button class="btn sm ghost" id="logout-btn" type="button">خروج</button>
+    </header>
+
+    <div class="page">
+      <p class="alert" id="exposed-warning" role="alert" hidden style="margin-bottom:16px">
+        <strong>تحذير:</strong> فولدر data مكشوف على الإنترنت، وده معناه إن قاعدة بيانات العملاء ممكن تتحمّل.
+        اتأكد إن ملف <bdi>data/.htaccess</bdi> اترفع، أو كلّم دعم الاستضافة.
+      </p>
+      <section class="stats" id="stats"></section>
+
+      <div class="layout">
+        <aside class="sidebar" id="facets" aria-label="التصنيفات"></aside>
+
+        <main>
+          <div class="toolbar">
+            <label class="field search">
+              <span>بحث</span>
+              <input id="search" type="search" placeholder="اسم، رقم، شركة، إيميل...">
+            </label>
+            <label class="field"><span>من تاريخ</span><input id="from" type="date"></label>
+            <label class="field"><span>إلى تاريخ</span><input id="to" type="date"></label>
+            <label class="field">
+              <span>الترتيب</span>
+              <select id="sort">
+                <option value="recent">الأحدث</option>
+                <option value="priority">الأولوية</option>
+                <option value="region">المنطقة</option>
+                <option value="name">الاسم</option>
+                <option value="oldest">الأقدم</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="chips" id="chips"></div>
+
+          <div class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>العميل</th>
+                    <th>الموبايل</th>
+                    <th>المنصب</th>
+                    <th>المكان</th>
+                    <th>الأولوية</th>
+                    <th>الحالة</th>
+                    <th>آخر تسجيل</th>
+                  </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="empty" hidden>مفيش عملاء بالفلاتر دي</div>
+            <div class="pager" id="pager"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lead details -->
+  <dialog id="lead-dialog" aria-labelledby="d-name">
+    <div class="dlg-head">
+      <h2 id="d-name"></h2>
+      <span id="d-priority-badge"></span>
+      <button class="icon-btn" id="d-close" type="button" aria-label="إغلاق">×</button>
+    </div>
+    <div class="dlg-body">
+      <div class="actions" id="d-actions"></div>
+
+      <div class="controls">
+        <label class="field">
+          <span>الحالة</span>
+          <select id="d-status"></select>
+        </label>
+        <label class="field">
+          <span>الأولوية</span>
+          <select id="d-priority"></select>
+          <small class="score-note" id="d-score"></small>
+        </label>
+      </div>
+
+      <dl class="details" id="d-details"></dl>
+
+      <section class="notes">
+        <h3>المتابعة والملاحظات</h3>
+        <form class="note-form" id="note-form">
+          <textarea name="body" rows="2" maxlength="2000" placeholder="مثلاً: كلمته وطلب عرض سعر يوم الأحد"></textarea>
+          <button class="btn primary" type="submit">إضافة</button>
+        </form>
+        <ul class="note-list" id="d-notes"></ul>
+      </section>
+
+      <div class="dlg-foot">
+        <span id="d-meta"></span>
+        <button class="btn sm danger" id="d-delete" type="button">حذف العميل</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

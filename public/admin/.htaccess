@@ -1,0 +1,5 @@
+# The dashboard must never be shown inside another site's frame.
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "DENY"
+  Header always set Cache-Control "no-cache"
+</IfModule>

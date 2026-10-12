@@ -1,0 +1,2 @@
+# Server files (.htaccess, PHP) keep Unix line endings on every computer.
+* text=auto eol=lf
