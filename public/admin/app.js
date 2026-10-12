@@ -149,6 +149,8 @@
         <td>${statusBadge(l.status)}</td>
         <td><div>${fmtDate(l.last_submitted_at)}</div>${l.submissions > 1 ? `<div class="sub">سجّل ${times(l.submissions)}</div>` : ''}</td>
       </tr>`).join('');
+    const filtered = Object.keys(state.filters).length > 0 || state.q || state.from || state.to;
+    $('empty').textContent = filtered ? 'مفيش عملاء بالفلاتر دي' : 'لسه مفيش عملاء. أول عميل يسجل هيظهر هنا.';
     $('empty').hidden = items.length > 0;
 
     const start = total ? (page - 1) * 50 + 1 : 0;

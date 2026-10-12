@@ -8,20 +8,20 @@
 
 1. **اعمل subdomain:** من hPanel افتح إعدادات الدومين `orvann.com` ثم Subdomains، واعمل `crm`. خد بالك من الفولدر اللي هيتعمله (غالباً `public_html/crm`).
 2. **ارفع الملفات:** افتح File Manager وادخل الفولدر ده، ارفع `crm-upload.zip`، واعمله Extract في نفس الفولدر، وبعدين امسح ملف الـ zip.
-   - لازم الملفات تبقى في الفولدر مباشرة: `index.html` و `admin/` و `api/` و `app/` و `data/`، مش جوه فولدر `public` تاني.
+   - لازم الملفات تبقى في الفولدر مباشرة: `index.html` و `admin/` و `form/` و `api/` و `app/` و `data/`، مش جوه فولدر `public` تاني.
    - فعّل إظهار الملفات المخفية في File Manager واتأكد إن `.htaccess` موجود. الملفات دي هي اللي بتحمي كلمة السر وقاعدة البيانات.
 3. **SSL:** اتأكد إن `crm.orvann.com` عليه شهادة SSL من hPanel (بتتفعل لوحدها غالباً خلال دقايق).
-4. **افتح** `https://crm.orvann.com/admin/` وادخل ببيانات الدخول الموجودة في `app/settings.php`.
+4. **افتح** `https://crm.orvann.com/` وادخل ببيانات الدخول الموجودة في `app/settings.php`. فورم التسجيل على `https://crm.orvann.com/form/`.
 
 ### فحص بعد الرفع
 
 | جرّب | المفروض يحصل |
 |---|---|
-| `https://crm.orvann.com/admin/` | صفحة الدخول من غير رسالة خطأ. لو فيه مشكلة في الاستضافة (SQLite مش مفعّل، فولدر مش قابل للكتابة) هتظهر مكتوبة هناك |
+| `https://crm.orvann.com/` | صفحة الدخول من غير رسالة خطأ. لو فيه مشكلة في الاستضافة (SQLite مش مفعّل، فولدر مش قابل للكتابة) هتظهر مكتوبة هناك |
 | `https://crm.orvann.com/api/options` | نص JSON فيه القوائم. لو طلع 404 يبقى إعادة كتابة الروابط مش شغالة، واستخدم `https://crm.orvann.com/api/index.php?r=leads` كرابط للموقع |
 | `https://crm.orvann.com/app/settings.php` | **403 ممنوع** |
 | `https://crm.orvann.com/data/access-check.txt` | **403 ممنوع**. لو اتفتح، اللوحة هتعرض تحذير أحمر، وساعتها متستخدمش النظام قبل ما تتحل |
-| سجّل عميل من `https://crm.orvann.com/` | يظهر في اللوحة |
+| سجّل عميل من `https://crm.orvann.com/form/` | يظهر في اللوحة |
 
 ملفات `.htaccess` اتكتبت بنفس الأوامر اللي موقعك ونظام ORVANN Tasks بيستخدموها على نفس الاستضافة، بس متجربتش على سيرفر Hostinger نفسه، فالجدول ده هو التأكيد.
 
@@ -84,13 +84,14 @@
 php -S localhost:3000 -t public dev-router.php
 ```
 
-الفورم على http://localhost:3000/ واللوحة على http://localhost:3000/admin/. فولدر `local-data/` فيه بيانات التجربة المحلية ومبيترفعش.
+اللوحة على http://localhost:3000/ والفورم على http://localhost:3000/form/. فولدر `local-data/` فيه بيانات التجربة المحلية ومبيترفعش.
 
 ## الملفات
 
 ```
 public/                 ده اللي بيترفع على الاستضافة (ونفسه جوه crm-upload.zip)
-  index.html            فورم العميل
+  index.html            بيفتح اللوحة مباشرة
+  form/                 فورم العميل
   embed.js              كود تضمين الفورم في المواقع
   admin/                لوحة التحكم
   api/index.php         الـ API كله

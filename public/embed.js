@@ -10,7 +10,7 @@
   var src = page.get('utm_source') || location.hostname;
 
   var iframe = document.createElement('iframe');
-  iframe.src = base.href + '?embed=1&source=' + encodeURIComponent(src);
+  iframe.src = base.href + 'form/?embed=1&source=' + encodeURIComponent(src);
   iframe.title = 'نموذج التسجيل';
   iframe.loading = 'lazy';
   iframe.style.cssText = 'width:100%;border:0;min-height:640px;display:block';

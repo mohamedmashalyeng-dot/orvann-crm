@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>سجّل بياناتك</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="form-page">
+  <main class="form-card">
+    <div id="form-view">
+      <h1>سجّل بياناتك</h1>
+      <p class="muted">املأ البيانات دي وفريقنا هيتواصل معاك في أقرب وقت.</p>
+
+      <form id="lead-form" novalidate>
+        <div class="form-grid">
+          <label class="field">
+            <span>الاسم بالكامل <b class="req">*</b></span>
+            <input name="full_name" required maxlength="120" autocomplete="name">
+          </label>
+          <label class="field">
+            <span>رقم الموبايل <b class="req">*</b></span>
+            <input name="phone" required maxlength="40" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="01xxxxxxxxx">
+          </label>
+          <label class="field">
+            <span>البريد الإلكتروني</span>
+            <input name="email" type="email" maxlength="160" autocomplete="email" dir="ltr">
+          </label>
+          <label class="field">
+            <span>اسم الشركة</span>
+            <input name="company" maxlength="160" autocomplete="organization">
+          </label>
+          <label class="field">
+            <span>المنصب <b class="req">*</b></span>
+            <select name="job_title" required data-list="jobTitles"></select>
+          </label>
+          <label class="field">
+            <span>المحافظة / الدولة <b class="req">*</b></span>
+            <select name="region" required></select>
+          </label>
+          <label class="field">
+            <span>المدينة / المنطقة</span>
+            <input name="city" maxlength="120" autocomplete="address-level2">
+          </label>
+          <label class="field">
+            <span>الخدمة المطلوبة</span>
+            <select name="service" data-list="services"></select>
+          </label>
+          <label class="field">
+            <span>الميزانية المتوقعة</span>
+            <select name="budget" data-list="budgets"></select>
+          </label>
+          <label class="field">
+            <span>محتاج الخدمة إمتى؟</span>
+            <select name="timeline" data-list="timelines"></select>
+          </label>
+          <label class="field full">
+            <span>رسالتك</span>
+            <textarea name="message" rows="4" maxlength="2000" placeholder="اكتب أي تفاصيل تحب نعرفها"></textarea>
+          </label>
+        </div>
+
+        <!-- Spam trap: hidden from people, bots fill it in -->
+        <input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="form-actions">
+          <p class="alert" id="form-error" role="alert" hidden></p>
+          <button type="submit" class="btn primary">إرسال البيانات</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="success-view" class="success" hidden>
+      <div class="check" aria-hidden="true">✓</div>
+      <h2>شكراً، وصلتنا بياناتك</h2>
+      <p class="muted">هنتواصل معاك قريب جداً.</p>
+      <button type="button" class="btn" id="again">تسجيل شخص آخر</button>
+    </div>
+  </main>
+
+  <script src="../js/form.js"></script>
+</body>
+</html>

@@ -2,4 +2,4 @@
 public/app/settings.php
 public/data/*.sqlite*
 local-data/
-crm-upload.zip
+*.zip

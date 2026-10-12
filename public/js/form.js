@@ -1,4 +1,6 @@
 (() => {
+  // Found from this script's own address, so the page that loads it can live in any folder.
+  const API = new URL('../api/index.php', document.currentScript.src).href;
   const params = new URLSearchParams(location.search);
   const embedded = params.has('embed');
   if (embedded) document.body.classList.add('embedded');
@@ -94,7 +96,7 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'جاري الإرسال...';
     try {
-      const res = await fetch('api/index.php?r=leads', {
+      const res = await fetch(API + '?r=leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -124,7 +126,7 @@
     new ResizeObserver(post).observe(document.body);
   }
 
-  fetch('api/index.php?r=options')
+  fetch(API + '?r=options')
     .then((r) => r.json())
     .then(fillSelects)
     .catch(() => showErrors({}, 'مش قادرين نحمّل الفورم، اعمل تحديث للصفحة'));
