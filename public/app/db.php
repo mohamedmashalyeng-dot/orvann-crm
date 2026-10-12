@@ -7,14 +7,82 @@ const CRM_FILTER_FIELDS = ['priority', 'status', 'zone', 'region', 'job_title', 
 const CRM_FACETS = ['priority', 'status', 'zone', 'region', 'job_title', 'service'];
 const CRM_PAGE_SIZE = 50;
 
+/**
+ * Where the database lives. Preferably a folder outside every website folder: a browser
+ * cannot reach it there, and emptying the CRM's own folder before an upload does not
+ * delete the customers. Once a database exists in one place, that place is used for good,
+ * so the choice can never flip and make the customers seem to vanish.
+ */
 function crm_data_dir()
 {
+    static $dir = null;
+    if ($dir !== null) {
+        return $dir;
+    }
     $custom = getenv('CRM_DATA_DIR');
     if ($custom) {
-        return rtrim($custom, '/\\');
+        return $dir = rtrim($custom, '/\\');
     }
     $settings = crm_settings();
-    return !empty($settings['data_dir']) ? rtrim($settings['data_dir'], '/\\') : dirname(__DIR__) . '/data';
+    if (!empty($settings['data_dir'])) {
+        return $dir = rtrim($settings['data_dir'], '/\\');
+    }
+
+    $inside = dirname(__DIR__) . '/data';
+    $outside = crm_private_dir();
+    $file = '/' . $settings['db_file'];
+    if ($outside !== null && @is_file($outside . $file)) {
+        return $dir = $outside;
+    }
+    if (is_file($inside . $file)) {
+        return $dir = $inside;
+    }
+    // No database yet: start outside the website folder if the host lets us write there.
+    if ($outside !== null && (@is_dir($outside) || @mkdir($outside, 0755, true)) && @is_writable($outside)) {
+        return $dir = $outside;
+    }
+    return $dir = $inside;
+}
+
+/**
+ * "crm-data" next to the outermost public_html above this app (shared hosts name every
+ * website folder public_html), or null when the layout is not one we recognise.
+ */
+function crm_private_dir()
+{
+    $parts = explode('/', str_replace('\\', '/', dirname(__DIR__)));
+    $at = array_search('public_html', $parts, true);
+    if ($at === false || $at < 1) {
+        return null;
+    }
+    return implode('/', array_slice($parts, 0, $at)) . '/crm-data';
+}
+
+/** True when the database is kept outside the folder the website is served from. */
+function crm_data_is_private()
+{
+    $app = str_replace('\\', '/', dirname(__DIR__));
+    return strpos(str_replace('\\', '/', crm_data_dir()) . '/', $app . '/') !== 0;
+}
+
+/**
+ * Makes sure the data folder exists and refuses browsers. The app restores these files
+ * itself, so a folder that was emptied or re-created is never left open.
+ */
+function crm_prepare_data_dir($dir)
+{
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    if (!is_file($dir . '/.htaccess')) {
+        @file_put_contents($dir . '/.htaccess', "# The customer database lives here: never served to a browser.\n"
+            . "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n"
+            . "<IfModule !mod_authz_core.c>\n  Order allow,deny\n  Deny from all\n</IfModule>\n");
+    }
+    // The dashboard fetches this file to prove the folder is closed; it only matters inside the app.
+    if (!crm_data_is_private() && !is_file($dir . '/access-check.txt')) {
+        @file_put_contents($dir . '/access-check.txt', "CRM-DATA-EXPOSED\nIf a browser can read this file, the data folder is not protected.\n");
+    }
 }
 
 function crm_db()
@@ -24,9 +92,7 @@ function crm_db()
         return $pdo;
     }
     $dir = crm_data_dir();
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
+    crm_prepare_data_dir($dir);
     $pdo = new PDO('sqlite:' . $dir . '/' . crm_settings()['db_file']);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

@@ -21,8 +21,12 @@ if ($route === 'health') {
         $problem = 'pdo_sqlite';
     } elseif (!is_file(dirname(__DIR__) . '/app/settings.php')) {
         $problem = 'settings';
-    } elseif (!is_writable(crm_data_dir())) {
-        $problem = 'data_dir';
+    } else {
+        // A data folder that does not exist yet is created on first use, if its parent allows it.
+        $dir = crm_data_dir();
+        if (!is_writable(is_dir($dir) ? $dir : dirname($dir))) {
+            $problem = 'data_dir';
+        }
     }
     crm_json(['ok' => $problem === null, 'problem' => $problem]);
 }
@@ -143,7 +147,7 @@ if ($route === 'logout' && $method === 'POST') {
 // ---------- admin: everything below needs a login ----------
 
 if ($route === 'me' && $method === 'GET') {
-    crm_json(['user' => crm_require_login()]);
+    crm_json(['user' => crm_require_login(), 'data_outside_web_folder' => crm_data_is_private()]);
 }
 
 if ($route === 'leads' && $method === 'GET') {

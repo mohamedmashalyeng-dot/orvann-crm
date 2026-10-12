@@ -25,6 +25,7 @@
   let user = '';
   let lastTotal = null;
   let current = null;
+  let setupProblem = ''; // what the server is missing, when it cannot run at all
 
   const dlg = $('lead-dialog');
   const dateFmt = new Intl.DateTimeFormat('ar-EG-u-nu-latn', { dateStyle: 'medium', timeStyle: 'short' });
@@ -363,7 +364,7 @@
     }).catch(() => null);
     const data = (await res?.json().catch(() => ({}))) ?? {};
     if (!res?.ok) {
-      err.textContent = data.error || 'مفيش اتصال بالسيرفر';
+      err.textContent = setupProblem || data.error || 'مفيش اتصال بالسيرفر';
       err.hidden = false;
       return;
     }
@@ -384,7 +385,7 @@
   // After an upload: say plainly what the server is missing, instead of a login that never works.
   const SETUP_PROBLEMS = {
     pdo_sqlite: 'الاستضافة مش مفعّل فيها SQLite. من hPanel افتح PHP Configuration ثم Extensions وفعّل pdo_sqlite.',
-    settings: 'ملف app/settings.php مش موجود على السيرفر. ارفعه مع باقي الملفات.',
+    settings: 'ملف الإعدادات app/settings.php مش موجود على السيرفر. ارفع ملف crm-upload.zip الكامل وفكّه في نفس الفولدر.',
     data_dir: 'السيرفر مش قادر يكتب في فولدر data. خلي صلاحيات الفولدر 755.',
     api: 'مش قادر أوصل للـ API. اتأكد إن فولدر api وفولدر app اترفعوا كاملين.',
   };
@@ -392,7 +393,8 @@
     .then((res) => res.json())
     .then((health) => health.ok || Promise.reject(health.problem))
     .catch((problem) => {
-      $('login-error').textContent = SETUP_PROBLEMS[problem] ?? SETUP_PROBLEMS.api;
+      setupProblem = SETUP_PROBLEMS[problem] ?? SETUP_PROBLEMS.api;
+      $('login-error').textContent = setupProblem;
       $('login-error').hidden = false;
     });
 
